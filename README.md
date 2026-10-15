@@ -58,7 +58,7 @@ Each benchmark includes behavior-based tests that must pass after refactoring. T
 
 ### On Kaggle (recommended)
 
-1. Open the [public Kaggle notebook](#) *(link to be added)*
+1. Open the [public Kaggle notebook](https://www.kaggle.com/code/anirudh0465/gemma-4-multi-agent-consensus-demo)
 2. Attach **Gemma 4 12B-it** (Transformers variant) via **Add Input → Models**
 3. Set accelerator to **GPU T4 ×2** and turn **Internet** on
 4. **Run All** — cell 5 sanity-checks the benchmarks, cell 6 does a quick committee run, cell 7 runs the full experiment
