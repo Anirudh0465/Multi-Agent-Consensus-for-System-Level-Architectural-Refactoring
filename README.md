@@ -48,6 +48,7 @@ Each benchmark includes behavior-based tests that must pass after refactoring. T
 ## Repository Structure
 
 ```
+├── .gitignore
 ├── README.md
 ├── LICENSE                              # Apache 2.0
 └── gemma-4-multi-agent-consensus-demo.ipynb   # Main notebook (runs on Kaggle)
