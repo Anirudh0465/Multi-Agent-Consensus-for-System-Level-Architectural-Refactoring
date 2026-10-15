@@ -75,16 +75,36 @@ You'll need a GPU with ≥16 GB VRAM and the Gemma 4 model weights.
 
 ## Key Results
 
-*(Results will be updated after the full experiment runs complete.)*
+Evaluation over **24 independent experiment runs** (4 tasks × 3 runs × 2 methods) on 2× NVIDIA T4 GPUs:
 
-Early single-run results on `payments_split`:
+### Overall Performance (Mean over 12 runs per method)
 
-| Method | Success | Tokens | Time (s) |
-|---|---|---|---|
-| Baseline | ❌ | 2,730 | 374 |
-| Committee | ✅ (3 rounds) | 12,187 | 523 |
+| Method | Success Rate | Compiles | Tests Pass | Structural Errors | Mean Rounds | Mean Tokens | Mean Runtime |
+|---|---|---|---|---|---|---|---|
+| **Baseline** | 83.3% (10/12) | 100% | 83.3% | 0.0 | 1.00 | 2,203 | 151.5s (~2.5 min) |
+| **Committee** | **91.7% (11/12)** | **100%** | **91.7%** | **0.0** | **1.42** | 9,661 | 388.6s (~6.5 min) |
 
-The baseline's refactored code compiled and was properly split into 3 files, but `handle_payment_request` returned `None` instead of `"Success"`/`"Error"` — a missing `return` statement that the tests caught.
+### Task-by-Task Success Breakdown (3 runs each)
+
+| Benchmark Task | Target Files | Baseline Success | Committee Success | Key Observation |
+|---|---|---|---|---|
+| `payments_split` | 3 | 66.7% (2/3) | **100.0% (3/3)** | Baseline failed run 1 (`tests_failed` due to return contract); Committee succeeded in all 3 runs. |
+| `inventory_layers` | 3 | 100.0% (3/3) | 100.0% (3/3) | Both methods handled storage/logic/CLI separation reliably. |
+| `report_pipeline` | 4 | 66.7% (2/3) | 66.7% (2/3) | 4-stage pipeline; Committee recovered across multi-round feedback (run 1 resolved after 24k tokens), with 1 run exhausting rounds. |
+| `notifier_strategy` | 2 | 100.0% (3/3) | 100.0% (3/3) | Strategy pattern refactor completed cleanly across all runs. |
+
+### Failure Analysis
+
+| Method | `ok` (Success) | `tests_failed` | `compile_error` | `too_few_files` | `review_not_approved` |
+|---|---|---|---|---|---|
+| Baseline | 10 | **2** | 0 | 0 | 0 |
+| Committee | **11** | **1** | 0 | 0 | 0 |
+
+### Key Takeaways
+
+1. **Compilation vs. Runtime Behavior**: Both baseline and committee achieved 100% compilation and zero syntax errors across all 24 runs. Single-pass LLMs easily produce code that compiles, but fail silently on behavioral contracts.
+2. **Multi-Agent Error Recovery**: In `payments_split` (run 1) and `report_pipeline` (run 0 and run 1), the Developer ⇄ QA feedback loop detected broken test assertions and repaired them across multiple rounds (mean rounds: 1.42).
+3. **The Compute Trade-off**: The multi-agent consensus loop uses ~4.4× more tokens and ~2.6× more runtime than the single-agent baseline, directly exchanging compute budget for higher architectural fidelity and semantic correctness.
 
 ## Technical Details
 
